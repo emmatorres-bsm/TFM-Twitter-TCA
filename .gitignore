@@ -1,0 +1,72 @@
+
+# TRABAJO FINAL DE MÁSTER - Detección temprana de Trastornos de Conducta Alimentaria en Redes Sociales mediante Inteligencia Artificial (.gitignore)
+
+# --- Entornos Virtuales y Dependencias Locales ---
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Artefactos de Compilación de Python y Caché ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Jupyter Notebooks (Archivos temporales de guardado) ---
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+*.gdoc
+
+# --- Modelos de Lenguaje y Checkpoints de Entrenamiento ---
+# Ignora los resultados pesados del entrenamiento local de BERT (pesan gigas)
+results/
+LLM_TCA_Risk/
+LLM_TCA_Risk_Eval/
+checkpoint-*/
+epoch-*/
+.huggingface/
+
+# --- Datos y Archivos Pesados (Configuración personalizada) ---
+# Descomenta las líneas de abajo si en el futuro decides NO subir ciertos CSVs.
+# Como en este commit SÍ subes 'SAMPLE_USUARIOS_RIESGO.csv' y 'USUARIOS_CLASIFICADOS_RIESGO.csv',
+# dejamos que pasen, pero bloqueamos copias temporales o archivos intermedios brutos.
+*HISTORIAL_USUARIOS_TCA_DEF.csv
+*usuarios_unicos.csv
+*usuarios_perfiles.csv
+*DATASET_FINAL_MAESTRO.csv
+
+# --- Archivos del Sistema Operativo ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# --- Configuración de Entorno e IDEs ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
