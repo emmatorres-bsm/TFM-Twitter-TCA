@@ -122,7 +122,7 @@ Para garantizar la correcta replicabilidad del entorno y la ejecución local o e
 
 
 
-\## 📜 Licencia y Propósito Ético
+\##  Licencia y Propósito Ético
 
 
 
