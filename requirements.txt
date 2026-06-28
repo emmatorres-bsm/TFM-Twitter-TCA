@@ -1,0 +1,25 @@
+# Manipulación y análisis de datos
+pandas
+numpy
+
+# Visualización de datos
+matplotlib
+seaborn
+wordcloud
+
+# Machine Learning y NLP tradicional
+scikit-learn
+nltk
+
+# Modelos de Lenguaje (Hugging Face)
+transformers
+datasets
+evaluate
+accelerate
+
+# Anonimización y procesamiento de texto avanzado
+spacy
+scrubadub
+
+# Peticiones a la API
+requests
