@@ -2,7 +2,7 @@
 
 
 
-Este repositorio contiene el \*\*pipeline analítico completo y multicapa\*\* desarrollado para mi Trabajo de Fin de Máster (TFM). El proyecto tiene como objetivo la identificación proactiva y la caracterización sociolingüística de perfiles en riesgo de padecer Trastornos de la Conducta Alimentaria (TCA) en la red social X (anteriormente Twitter). 
+Este repositorio contiene el \*\*pipeline analítico completo y multicapa\*\* desarrollado para nuestro Trabajo de Fin de Máster (TFM). El proyecto tiene como objetivo la identificación proactiva y la caracterización sociolingüística de perfiles en riesgo de padecer Trastornos de la Conducta Alimentaria (TCA) en la red social X (anteriormente Twitter). 
 
 
 
@@ -14,39 +14,37 @@ Inspirado metodológicamente en el \*\*Proyecto STOP\*\* (\*Suicide prevenTion i
 
 
 
-\##  Arquitectura del Pipeline (Fases de Datos)
+\##  Arquitectura del pipeline 
 
 
-
-El repositorio está estructurado en 7 módulos secuenciales en formato Jupyter Notebook (`.ipynb`), organizados de la siguiente manera:
-
+El repositorio está estructurado en 7 módulos secuenciales en formato `py`, organizados de la siguiente manera:
 
 
 \###  1. Adquisición y Unificación de Datos
 
-\* \*\*`01a\_extraccion\_geolocalizada.ipynb`\*\*: Extracción dirigida de publicaciones mediante la API de Twitter utilizando geolocalización por coordenadas (GPS de España) y filtros lingüísticos preliminares para aislar ruido de otros dialectos.
+\* \*\*`01a\_extraccion\_geolocalizada.py`\*\*: Extracción dirigida de publicaciones mediante la API de Twitter utilizando geolocalización por coordenadas (GPS de España) y filtros lingüísticos preliminares para aislar ruido de otros dialectos.
 
-\* \*\*`01b\_extraccion\_filtros\_linguisticos.ipynb`\*\*: Captura de datos basada en grupos de palabras clave (\*keywords\*), \*hashtags\* encubiertos y jerga propia de la comunidad. Excluye de forma agresiva \*slangs\* y nombres geográficos de Latinoamérica para centrar el estudio en España.
+\* \*\*`01b\_extraccion\_filtros\_linguisticos.py`\*\*: Captura de datos basada en grupos de palabras clave (\*keywords\*), \*hashtags\* encubiertos y jerga propia de la comunidad. Excluye de forma agresiva \*slangs\* y nombres geográficos de Latinoamérica para centrar el estudio en España.
 
-\* \*\*`02\_unificacion\_y\_limpieza.ipynb`\*\*: Módulo encargado de consolidar las diferentes fuentes de extracción, aplicar deduplicación estricta de registros por identificador único, eliminar celdas vacías y descartar publicaciones con longitudes de texto insuficientes para el análisis.
+\* \*\*`02\_unificacion\_y\_limpieza.py`\*\*: Módulo encargado de consolidar las diferentes fuentes de extracción, aplicar deduplicación estricta de registros por identificador único, eliminar celdas vacías y descartar publicaciones con longitudes de texto insuficientes para el análisis.
 
 
 
-\###  2. Filtrado y Preparación del Dataset Maestro
+\###  2. Filtrado y Preparación del dataset maestro
 
-\* \*\*`03\_filtro\_instituciones\_vs\_usuarios.ipynb`\*\*: Para evitar sesgos en el análisis discursivo, se implementa un clasificador BERT binario (`bert-base-spanish-wwm-cased`) apoyado por heurísticas avanzadas de filtrado semántico. Su objetivo es identificar y separar de forma automatizada las cuentas de instituciones, clínicas u ONGs de los perfiles de usuarios reales e individuales.
+\* \*\*`03\_filtro\_instituciones\_vs\_usuarios.py`\*\*: Para evitar sesgos en el análisis discursivo, se implementa un clasificador BERT binario (`bert-base-spanish-wwm-cased`) apoyado por heurísticas avanzadas de filtrado semántico. Su objetivo es identificar y separar de forma automatizada las cuentas de instituciones, clínicas u ONGs de los perfiles de usuarios reales e individuales.
 
-\* \*\*`04\_extraccion\_historial\_usuarios.ipynb`\*\*: Descarga de los últimos 50 tuits originales (excluyendo retuits y respuestas automáticas) de los usuarios reales identificados. Los textos individuales se agrupan cronológicamente para construir una cadena única de texto largo representativa del historial discursivo de cada perfil.
+\* \*\*`04\_extraccion\_historial\_usuarios.py`\*\*: Descarga de los últimos tuits originales (excluyendo retuits y respuestas automáticas) de los usuarios reales identificados. Aunque el pipeline está diseñado con un límite teórico de 50 publicaciones, las restricciones actuales de la API de X limitaron la extracción efectiva a un máximo de 20 tuits recientes por perfil. Los textos individuales se agrupan cronológicamente para construir una cadena única de texto largo representativa del historial discursivo de cada usuario.
 
 \* \*\*`05\_anonimizador\_usuarios.ipynb`\*\*: Módulo crítico de ética y privacidad. Implementa anonimización agresiva mediante reconocimiento de entidades nombradas (NER) con \*\*spaCy\*\* (`es\_core\_news\_md`), la librería \*\*scrubadub\*\* y expresiones regulares para sustituir nombres de personas, ubicaciones geográficas, enlaces URL, números y menciones por etiquetas genéricas (`{{PERSON}}`, `{{LOCATION}}`, etc.).
 
 
 
-\###  3. Fine-Tuning de BERT y Minería de Texto
+\###  3. Fine-Tuning de BERT y minería de texto
 
-\* \*\*`06\_FineTuning\_BERT\_y\_Clasificacion.ipynb`\*\*: Carga el Gold Standard etiquetado manualmente y realiza el ajuste fino (\*fine-tuning\*) de \*\*BETO\*\* para clasificación multicatenaria. Introduce estratégicamente la clase \*\*"Dudoso"\*\* como un umbral de incertidumbre metodológica para aislar textos ambiguos y salvaguardar la pureza de las clases \*\*"Riesgo"\*\* y \*\*"Control"\*\*. Genera automáticamente la matriz de confusión y ejecuta la inferencia sobre la totalidad del corpus.
+\* \*\*`06\_FineTuning\_BERT\_y\_Clasificacion.py`\*\*: Carga el Gold Standard etiquetado manualmente y realiza el ajuste fino (\*fine-tuning\*) de \*\*BETO\*\* para clasificación multiclase. Introduce estratégicamente la clase **"Dudoso"** como un umbral de incertidumbre metodológica para aislar textos ambiguos y salvaguardar la pureza de las clases **"Riesgo"** y **"Control"**. Evalúa el rendimiento del modelo generando la matriz de confusión y ejecuta la inferencia sobre la totalidad del corpus.
 
-\* \*\*`07\_Analisis\_Exploratorio\_Resultados.ipynb`\*\*: Fase de minería de datos y NLP discursivo. Implementa un sistema de \*\*preprocesamiento semántico dual\*\*: una \*lista estricta\* de \*stopwords\* (que elimina la paja de internet y las etiquetas de anonimización) para gráficos de unigramas y nubes de palabras comparativas; y una \*lista relajada\* (que mantiene vivos los verbos y pronombres) para la extracción de bigramas, permitiendo capturar la intencionalidad conductual del discurso del grupo de riesgo frente al grupo de control.
+\* \*\*`07\_Analisis\_Exploratorio\_Resultados.py`\*\*: Fase de minería de datos y NLP discursivo. Implementa un sistema de \*\*preprocesamiento semántico dual\*\*: una \*lista estricta\* de \*stopwords\* (que elimina la paja de internet y las etiquetas de anonimización) para gráficos de unigramas y nubes de palabras comparativas; y una \*lista relajada\* (que mantiene vivos los verbos y pronombres) para la extracción de bigramas, permitiendo capturar la intencionalidad conductual del discurso del grupo de riesgo frente al grupo de control.
 
 
 
@@ -54,7 +52,7 @@ El repositorio está estructurado en 7 módulos secuenciales en formato Jupyter 
 
 
 
-\##  Datasets Incluidos
+\##  Datasets incluidos
 
 
 
@@ -72,7 +70,7 @@ Debido a estrictas políticas de privacidad y protección de datos sensibles de 
 
 
 
-\##  Instalación y Configuración
+\##  Instalación y configuración
 
 
 
@@ -122,9 +120,9 @@ Para garantizar la correcta replicabilidad del entorno y la ejecución local o e
 
 
 
-\##  Licencia y Propósito Ético
+\##  Licencia y propósito ético
 
 
 
-Este proyecto se ha desarrollado bajo la supervisión de un comité ético de investigación. Su fin es puramente preventivo, educativo y de salud pública. Las propuestas teóricas derivadas de este modelo buscan complementar plataformas de asistencia médica y psicológica (como el Proyecto STOP), rechazando de forma explícita cualquier mecanismo punitivo o de censura de contenidos en entornos digitales.
+Este proyecto se ha desarrollado bajo la supervisión de un comité de investigación. Su fin es puramente preventivo, educativo y de salud pública. Las propuestas teóricas derivadas de este modelo buscan complementar plataformas de asistencia médica y psicológica (como el Proyecto STOP), rechazando de forma explícita cualquier mecanismo punitivo o de censura de contenidos en entornos digitales.
 
