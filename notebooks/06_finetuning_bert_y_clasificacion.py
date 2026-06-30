@@ -7,31 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1qc0E3nzfgqfT6biLT5xXNSP1FmqrtAb_
 """
 
-import pandas as pd
-
-CARPETA = "/content/drive/MyDrive/TFM_TWEETS/Datasets trabajados"
-
-df = pd.read_csv(
-    f"{CARPETA}/USUARIOS_AGRUPADOS_TCA_ANONIMIZADO.csv"
-)
-
-sample = df.sample(
-    n=500,
-    random_state=42
-)
-
-sample["tipo_manual"] = ""
-
-sample.to_csv(
-    f"{CARPETA}/SAMPLE_USUARIOS_RIESGO.csv",
-    index=False
-)
-
-print("Archivo creado:")
-print(f"{CARPETA}/SAMPLE_USUARIOS_RIESGO.csv")
-
-print("Usuarios seleccionados:", len(sample))
-
 !pip install transformers datasets accelerate evaluate -q
 
 import pandas as pd
@@ -317,3 +292,108 @@ print("\nArchivo generado:")
 print(ARCHIVO_SALIDA)
 
 print(df_total.head())
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from google.colab import drive
+drive.mount('/content/drive')
+
+CARPETA = "/content/drive/MyDrive/TU_CARPETA"
+
+ARCHIVO_GOLD = f"{CARPETA}/SAMPLE_USUARIOS_RIESGO.csv"
+ARCHIVO_SALIDA = f"{CARPETA}/USUARIOS_CLASIFICADOS_RIESGO.csv"
+
+df_gold = pd.read_csv(ARCHIVO_GOLD)
+df_gold = df_gold.dropna(subset=["tipo_manual"]).copy()
+df_gold["tipo_manual"] = df_gold["tipo_manual"].str.lower().str.strip()
+
+label_map = {"control": 0, "dudoso": 1, "riesgo": 2}
+df_gold["label"] = df_gold["tipo_manual"].map(label_map)
+df_gold = df_gold.dropna(subset=["label"])
+df_gold["label"] = df_gold["label"].astype(int)
+
+df_gold = df_gold.rename(columns={"historial_anon": "texto_modelo"})
+
+_, test_df = train_test_split(df_gold, test_size=0.2, random_state=42, stratify=df_gold["label"])
+
+df_preds = pd.read_csv(ARCHIVO_SALIDA)
+
+if "historial_anon" in df_preds.columns:
+    df_preds = df_preds.rename(columns={"historial_anon": "texto_modelo"})
+
+df_merged = pd.merge(test_df, df_preds[['texto_modelo', 'LLM_TCA_Risk']], on='texto_modelo', how='inner')
+
+if len(df_merged) == 0:
+    print("Error")
+else:
+    print("Datos recuperados")
+
+    y_real = df_merged['tipo_manual'].str.capitalize()
+    y_pred = df_merged['LLM_TCA_Risk'].str.capitalize()
+
+    categorias_orden = ["Control", "Riesgo", "Dudoso"]
+
+    cm = confusion_matrix(y_real, y_pred, labels=categorias_orden)
+
+    plt.figure(figsize=(8, 6), dpi=300)
+
+    ax = sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                     xticklabels=categorias_orden,
+                     yticklabels=categorias_orden,
+                     annot_kws={"size": 14, "weight": "bold"},
+                     cbar_kws={'label': 'Número de perfiles'})
+
+    plt.title('Matriz de Confusión: Rendimiento del modelo', fontsize=15, fontweight='bold', pad=15)
+    plt.ylabel('Etiqueta Real (Anotación Manual)', fontsize=12, fontweight='bold')
+    plt.xlabel('Predicción del Modelo', fontsize=12, fontweight='bold')
+
+    for _, spine in ax.spines.items():
+        spine.set_visible(True)
+        spine.set_color('#cccccc')
+
+    plt.tight_layout()
+
+    ruta_matriz = f"{CARPETA}/Figura_Matriz_Confusion.png"
+    plt.savefig(ruta_matriz, bbox_inches='tight')
+    plt.show()
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import numpy as np
+
+CARPETA = "/content/drive/MyDrive/TU_CARPETA"
+
+reverse_map = {0: "Control", 1: "Dudoso", 2: "Riesgo"}
+y_real_text = [reverse_map[num] for num in test_df["label"]]
+y_pred_text = [reverse_map[num] for num in preds]
+
+categorias_orden = ["Control", "Riesgo", "Dudoso"]
+
+cm = confusion_matrix(y_real_text, y_pred_text, labels=categorias_orden)
+
+plt.figure(figsize=(8, 6), dpi=300)
+
+ax = sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                 xticklabels=categorias_orden,
+                 yticklabels=categorias_orden,
+                 annot_kws={"size": 14, "weight": "bold"},
+                 cbar_kws={'label': 'Número de perfiles'})
+
+plt.title('Matriz de Confusión: Rendimiento del modelo', fontsize=15, fontweight='bold', pad=15)
+plt.ylabel('Etiqueta Real (Anotación manual)', fontsize=12, fontweight='bold')
+plt.xlabel('Predicción del Modelo', fontsize=12, fontweight='bold')
+
+for _, spine in ax.spines.items():
+    spine.set_visible(True)
+    spine.set_color('#cccccc')
+
+plt.tight_layout()
+
+ruta_matriz = f"{CARPETA}/Figura_Matriz_Confusion_BERT.png"
+plt.savefig(ruta_matriz, bbox_inches='tight')
+plt.show()
